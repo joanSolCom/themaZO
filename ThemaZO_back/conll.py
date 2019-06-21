@@ -37,13 +37,13 @@ class ConllSentence(object):
         self.tokens = {}
         self.token_list = []
         self.raw_sentence = raw_sentence.strip()
-        
+
+
         if self.raw_sentence:
             self.raw_tokens = self.raw_sentence.split('\n')
             
             for raw_token in self.raw_tokens:
                 token = ConllToken2009(raw_token)
-
                 self.tokens[token.id] = token
                 self.token_list.append(token)
 
@@ -52,6 +52,9 @@ class ConllSentence(object):
 
     def __iter__(self):
         return iter(self.token_list)
+
+    def __len__(self):
+        return len(self.token_list)
 
     def __repr__(self):
         return '\n'.join(map(repr, self.token_list))

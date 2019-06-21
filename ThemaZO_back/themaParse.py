@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import codecs
-from itertools import tee, islice, chain, izip
+#from itertools import tee, islice, chain, izip
 import sys
 from conll import ConllStruct
 #from syntaxStr import SyntaxStr
@@ -11,11 +11,10 @@ from treeOperations import SyntacticTreeOperations
 
 class ThemParser:
 
-	def __init__(self, path, pathIn):
-		fd = codecs.open(pathIn,"r",encoding="utf-8")
-		raw_conll = fd.read()
-
-		self.iCS = ConllStruct(raw_conll.encode("utf-8"))
+	def __init__(self, raw_conll = None):
+		
+		conll = raw_conll
+		self.iCS = ConllStruct(conll)
 		self.conllParse()
 
 	def propAnalyze(self, sentence):
@@ -25,6 +24,7 @@ class ThemParser:
 
 		root = []
 		i=1
+		print(sentence)
 		while i < endsent:
 			token = sentence.tokens[str(i)]
 			if token.deprel == "ROOT":
@@ -278,11 +278,11 @@ class ThemParser:
 
 			root, endsent = self.propAnalyze(sentence)
 
-			print "################"
-			print sentCount
-			print "\n"
+			print("################")
+			print(sentCount)
+			print()
 			iTree = SyntacticTreeOperations(sentence.raw_sentence)
-
+			
 			typeStr = self.get_type_struc(iTree, root[0])
 
 			# Causal sentence
@@ -320,27 +320,10 @@ class ThemParser:
 				array4level = self.thematicity(sentence, iTree, root[0], endsent)
 				array4sent.append(array4level)
 
-			for s in array4sent:
-				array4web.append(s)
+			array4web.append(array4sent)
 
-		#print array4web
-			print sentence
-			print array4sent
-'''
-			# Code for printing CONLL output
-			for token in sentence:
-				tokens.append(str(token))
+		self.levels = array4web
 
-			tokens= "\n".join(tokens)
-			new_sent.append(tokens)
-
-		new_conll = "\n\n".join(new_sent)
-#		print new_conll
-		result = open(path + "output.conll", "w")
-		result.write(new_conll)
-		result.close()
-		print "New conll has been printed"
-'''
 
 if __name__ == '__main__':
 	path = "/home/upf/Desktop/docs/themaParse/"

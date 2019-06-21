@@ -19,7 +19,9 @@ def process(text):
 
 	return textConll
 
+'''
 path = "/home/upf/Desktop/them/transcript.txt"
 txt = open(path,"r").read().strip()
 #print(process(txt))
 print("Conll file from Spacy parser is ready!")
+'''
