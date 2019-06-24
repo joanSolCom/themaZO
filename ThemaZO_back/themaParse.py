@@ -23,63 +23,68 @@ class ThemParser:
 		endsent = len(sentence.tokens)
 
 		root = []
-		i=1
-		print(sentence)
-		while i < endsent:
-			token = sentence.tokens[str(i)]
+		for token in sentence:
 			if token.deprel == "ROOT":
 				root.append(int(token.id))
 				root.append(token)
-			if i == endsent - 1:
+			if int(token.id) == endsent and token.deprel == "punct":
+				endsent = int(token.id) - 1
+			elif int(token.id) == endsent and token.deprel != "punct":
 				endsent = int(token.id)
-
-			i+=1
 
 		return root, endsent
 
 	def thematicity(self, sentence, iTree, idnode, endsent):
 		spcount = 1
-		splitR1 = 0
 		endT = 0
 		endSP = 0
+		begR = 1
 		array4level = []
+
+		subjNode = None
+		spNode = None
+		splitR1 = None
+		rNode = None
 
 		nodesParent = iTree.get_children_by_parent_id(idnode)
 		for n in nodesParent:
 			if n.id < idnode and n.arcLabel != "punct":
-				subj = 0
 				# Theme
 				if n.arcLabel in ("nsubj", "nsubjpass"):
-					minId, maxId = iTree.get_subtree_span(n)
-					writeThem(sentence, maxId, minId)
-					array4level = self.form_array(array4level, minId,maxId, "T1")
-
-					endT = maxId
-					subj = minId 
-
+					subjNode = n
 				# Frontal Spec
-				if n.arcLabel in ("cc", "prep", "advmod", "mark"):
-					minId, maxId = iTree.get_subtree_span(n)
-					pprop, spcount = writeThem(sentence, maxId, minId, 0, spcount)
-					labelsp = "SP"+ str(int(spcount) - 1)
-					array4level = self.form_array(array4level, minId,maxId, labelsp)
-
-					endSP = maxId
+				elif n.arcLabel in ("cc", "prep", "advmod", "mark", "npadvmod") and n.lemma != "how":
+					spNode = n
 				# Frontal Rheme
-				elif n.arcLabel != "nsubj" and n.pos[0] != "V" and n.id < subj:
-					minId2, maxId2 = iTree.get_subtree_span(n)
-					writeThem(sentence, maxId2, minId2, 1, 0, 0, 1)
-					array4level = self.form_array(array4level, minId2,maxId2, "R1-1")
+				elif n.arcLabel == "advmod" and n.pos == "WRB":
+					splitR1 = n 
+				else:
+					rNode = n
+					begR = int(n.id)
 
-					splitR1 += 1
-					endSP = maxId2
+		if subjNode:
+			minId, maxId = iTree.get_subtree_span(subjNode)
+			writeThem(sentence, maxId, minId)
+			array4level = self.form_array(array4level, minId,maxId, "T1")
+			endT = maxId
+			subj = minId
+		if spNode:
+			minId2, maxId2 = iTree.get_subtree_span(spNode)
+			pprop, spcount = writeThem(sentence, maxId2, minId2, 0, spcount)
+			labelsp = "SP"+ str(int(spcount) - 1)
+			array4level = self.form_array(array4level, minId2,maxId2, labelsp)
+			endSP = maxId2
+		if splitR1:
+			minId3, maxId3 = iTree.get_subtree_span(splitR1)
+			writeThem(sentence, maxId3, minId3, 1, 0, 0, 1)
+			array4level = self.form_array(array4level, minId3,maxId3, "R1-1")
+			endSP = maxId3
+
 		# Rheme
 		endR = endsent
-		begR = 1
-
-		if endT > endSP:
+		if endT and begR == 1:
 			begR = endT + begR
-		else:
+		elif endSP and begR == 1:
 			begR = endSP + begR
 
 		if splitR1:
@@ -321,14 +326,16 @@ class ThemParser:
 				array4sent.append(array4level)
 
 			array4web.append(array4sent)
+			print(array4sent)
+			print(sentence)
 
 		self.levels = array4web
 
 
 if __name__ == '__main__':
-	path = "/home/upf/Desktop/docs/themaParse/"
-	pathIn = path + "them/selection1.conll"
+	#path = "/home/upf/Desktop/themaZO/"
+	pathIn = "/home/upf/Desktop/docs/themaParse/them/selection1.conll"
 	# cd Desktop/de && python mod1_synt2them.py out_eval.conll eval_them.conll
 	#path = sys.argv[1]
 
-	iT = ThemParser(path, pathIn)
+	iT = ThemParser(pathIn)
