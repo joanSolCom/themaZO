@@ -6,6 +6,7 @@ from logging import Formatter, INFO
 import spacy
 from themaParse import ThemParser
 from themaProg import ThematicProgression
+import neuralcoref
 
 from flask import g
 from flask_cors import CORS
@@ -18,6 +19,8 @@ cache = {}
 def load_spacy():
 	print("loading spacy")
 	en_nlp = spacy.load('en_core_web_sm')
+	neuralcoref.add_to_pipe(en_nlp)
+
 	print("loaded")
 	return en_nlp
 
@@ -51,6 +54,18 @@ def process(text):
 			dictS["tokens"].append(token)
 
 		dictJson["sentences"].append(dictS)
+
+	dictJson["corefs"] = []
+
+	for coref in doc._.coref_clusters:
+		strCor = str(coref).lower()
+		root = strCor.split(":")[0]
+		chain = strCor.split(":")[1].replace("[","").replace("]","").strip().split(", ")[1:]
+		chain.insert(0,root)
+
+		dictJson["corefs"].append(chain)
+
+	cache["corefs"] = dictJson["corefs"]
 
 	jsonStr = json.dumps(dictJson)
 	return jsonify(jsonStr), textConll
@@ -94,56 +109,12 @@ def getThematicity():
 
 @app.route('/getThematicProgression', methods=["POST"])
 def getThematicProgression():
-	iTP = ThematicProgression(cache["iT"])
+	iTP = ThematicProgression(cache["iT"], cache["corefs"])
 	dictJSON = {}
 	dictJSON["distances"] = iTP.distances
 	dictJSON["components"] = iTP.components
 	dictJSON["hypernode"] = iTP.hypernode
 	jsonStr = json.dumps(dictJSON)
-	return jsonify(jsonStr)
-
-
-@app.route('/getTestConll')
-def test():
-	raw = open("output.conll").read()
-	sentences = raw.split("\n\n")
-	dictJson = {}
-	dictJson["raw"] = raw
-	dictJson["sentences"] = []
-	for sentence in sentences:
-		dictS = {}
-		dictS["sentence"] = sentence
-		dictS["tokens"] = []
-		for token in sentence.split("\n"):
-			dictS["tokens"].append(token)
-
-		dictJson["sentences"].append(dictS)
-
-	jsonStr = json.dumps(dictJson)
-	return jsonify(jsonStr)
-
-@app.route('/getTestThematicity')
-def getTestThematicity():
-	raw = open("output.conll").read()
-	sentences = raw.split("\n\n")
-	dictJson = {}
-	dictJson["sentences"] = []
-
-	for sentence in sentences:
-		dictS = {}
-		dictS["text"] = ""
-		dictS["tokens"] = []
-		for token in sentence.split("\n"):
-			tokenComponents = token.split("\t")
-			if len(tokenComponents) > 1:
-				dictS["text"] += tokenComponents[1] + " "
-				dictS["tokens"].append(tokenComponents[1])
-
-		dictS["text"] = dictS["text"].strip()
-		dictS["components"] = [[(1,9,"T1"),(10,20,"R1")],[(1,9,"P2"),(10,20,"P3")],[(1,1,"SP"),(2,2,"T1"),(3,9,"R1"),(10,10,"SP1"),(11,20,"R1")]]
-		dictJson["sentences"].append(dictS)
-
-	jsonStr = json.dumps(dictJson)
 	return jsonify(jsonStr)
 
 
