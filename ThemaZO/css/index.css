@@ -1,3 +1,52 @@
+.btn-sample { 
+  color: #ffffff; 
+  background-color: #375B7A; 
+  border-color: #000000; 
+  outline: none;
+}
+
+.btn-sample:hover, 
+.btn-sample:focus, 
+.btn-sample:active, 
+.btn-sample.active, 
+.open .dropdown-toggle.btn-sample { 
+  color: #000000; 
+  background-color: #FDFFF1; 
+  border-color: #000000; 
+  font-weight: bold;
+
+} 
+ 
+.btn-sample:active, 
+.btn-sample.active, 
+.open .dropdown-toggle.btn-sample { 
+  background-image: none; 
+} 
+ 
+.btn-sample.disabled, 
+.btn-sample[disabled], 
+fieldset[disabled] .btn-sample, 
+.btn-sample.disabled:hover, 
+.btn-sample[disabled]:hover, 
+fieldset[disabled] .btn-sample:hover, 
+.btn-sample.disabled:focus, 
+.btn-sample[disabled]:focus, 
+fieldset[disabled] .btn-sample:focus, 
+.btn-sample.disabled:active, 
+.btn-sample[disabled]:active, 
+fieldset[disabled] .btn-sample:active, 
+.btn-sample.disabled.active, 
+.btn-sample[disabled].active, 
+fieldset[disabled] .btn-sample.active { 
+  background-color: #375B7A; 
+  border-color: #000000; 
+} 
+ 
+.btn-sample .badge { 
+  color: #375B7A; 
+  background-color: #ffffff; 
+}
+
 
 #themContainer .proposition::before
 {
@@ -23,8 +72,10 @@
 	 color:yellow;
 }
 #themContainer{
-	font-size: 20px;
+	font-size: 18px;
 }
+
+
 
 a {
   text-decoration: none;
@@ -40,6 +91,13 @@ a:hover {
 .round {
   border-radius: 70%;
   color: white;
+}
+
+#previous{
+	left:0;
+}
+#next{
+	right:0;
 }
 
 #main-title{
@@ -58,7 +116,7 @@ a:hover {
 }
 .onoffswitch-label {
     display: block; overflow: hidden; cursor: pointer;
-    border: 2px solid #999999; border-radius: 20px;
+    border: 2px solid #999999;
 }
 .onoffswitch-inner {
     display: block; width: 200%; margin-left: -100%;
@@ -72,7 +130,7 @@ a:hover {
 .onoffswitch-inner:before {
     content: "HIDE";
     padding-left: 10px;
-    background-color: #7934C2; color: #FFFFFF;
+    background-color: #375B7A; color: #FFFFFF;
 }
 .onoffswitch-inner:after {
     content: "SHOW";
@@ -98,11 +156,21 @@ a:hover {
 #textAreaWrapper{
 	text-align: center;
 }
-#textAreaWrapper textarea{
-	width:800px;
-}
+
 textarea {
   resize: none;
+}
+
+#inputBox{
+	width:800px;
+	height:100px;
+	border-radius: 4px;
+}
+.btn{
+	border-radius: 0;
+}
+#wrapperButtons button{
+	border-radius: 4px;
 }
 
 .result{
@@ -111,7 +179,9 @@ textarea {
 	padding:0;
 	margin:0;
 	width:100%;
+	height:100%;
 	position:absolute;
+	background-color: #FDFFF1;
 }
 
 #tabContent{
@@ -120,6 +190,7 @@ textarea {
 	padding:0;
 	display:none;
 }
+
 
 #wrapperButtons{
 	margin-bottom: 20px;

@@ -1,10 +1,11 @@
 var network;
 var globalDATA;
+var networkThem;
+var networkCoref;
 
 $(document).ready(function(){
 
 	$.ajaxSetup({async: false});  
-  	manageTestButton();
   	manageOnOffSwitch();
   	manageSubmitButton();
   	manageNextPrevButtons();
@@ -19,7 +20,7 @@ function manageNextPrevButtons()
 
 		if($( this ).css( "background-color" ) == "rgb(0, 0, 0)")
 		{
-			createGraph(globalDATA, currentGraph-1);
+			displayTree(globalDATA, currentGraph-1);
 		}	
 	});
 
@@ -27,34 +28,11 @@ function manageNextPrevButtons()
 		var currentGraph = parseInt($('#idGraph').attr("name"));
 		if($( this ).css( "background-color" ) == "rgb(0, 0, 0)")
 		{
-			createGraph(globalDATA, currentGraph+1);
+			displayTree(globalDATA, currentGraph+1);
 		}
 	});
 }
 
-function manageTestButton()
-{
-
-	$("#testButton").click(function(){
-	  	$("#pillWrapper").show();
-	  	$("#tabContent").show();
-
-	  	var height = $( window ).height();
-	  	console.log(height)
-	  	height = height - $("#pillWrapper").height() - $(".onoffswitch").height() - 20;
-	  	$("#graphContainer").height(height);
-	  	$("#themContainer").height(height);
-	  	$("#header").hide()
-	    $.getJSON( "http://127.0.0.1:5000/getTestConll?callback=?", function( dataJSON ) {
-		    createGraph(dataJSON);
-		});
-
-		$.getJSON( "http://127.0.0.1:5000/getTestThematicity?callback=?", function( dataJSON ) {
-		    displayThem(dataJSON);
-		});
-		$("#myonoffswitch").prop("checked",false);
-  	});
-}
 
 function manageSubmitButton()
 {
@@ -65,11 +43,11 @@ function manageSubmitButton()
 		$("#tabContent").show();
 
 	  	var height = $( window ).height();
-	  	console.log(height)
 	  	height = height - $("#pillWrapper").height() - $(".onoffswitch").height() - 20;
 	  	$("#graphContainer").height(height);
 	  	$("#themContainer").height(height);
 	  	$("#themProgContainer").height(height);
+	  	$("#corefContainer").height(height);
 
 	  	$("#header").hide()
 
@@ -77,18 +55,19 @@ function manageSubmitButton()
 	  	var data = {"text": text};
 
 	    $.post( "http://127.0.0.1:5000/getConll", data ,function( dataJSON ) {
-		    createGraph(dataJSON, 0);
+		    displayTree(dataJSON, 0);
+		    displayCorefs(dataJSON);
 		    globalDATA = dataJSON;
 		}, "json");
 
 		$.post( "http://127.0.0.1:5000/getThematicity", function( dataJSON ) {
 		    displayThem(dataJSON);
 		}, "json");
-		
+
 		$.post( "http://127.0.0.1:5000/getThematicProgression", function( dataJSON ) {
 		    displayThematicProgression(dataJSON);
 		}, "json");
-	    
+		
 		$("#myonoffswitch").prop("checked",false);
   	});
 }
@@ -107,9 +86,9 @@ function displayThematicProgression(dataJSON)
 
 	var node = {};
     node.id = 0;
-    node.label = hyper;
+    node.label = "First Sentence";
     node.group = 0;
-    node.title = "hyper";
+    node.title = hyper;
     nodes.push(node);
 
     var THEME_OFFSET = 100;
@@ -119,22 +98,20 @@ function displayThematicProgression(dataJSON)
 	{
 		var nodeTheme = {};
 	    nodeTheme.id = i+THEME_OFFSET;
-	    nodeTheme.label = components[i][0];
+	    nodeTheme.label = "Theme";
 	    nodeTheme.group = 1;
-	    nodeTheme.title = "Theme";
-	    nodeTheme.shape="triangle";
-	    nodeTheme.scaling = {label:{enabled:true}};
+	    nodeTheme.title = components[i][0];
+	    nodeTheme.shape="circle";
 	    nodes.push(nodeTheme);
 
 	    if( i < components.length-1)
 	    {
 		    var nodeRheme = {};
 		    nodeRheme.id = i+RHEME_OFFSET;
-		    nodeRheme.label = components[i][1];
+		    nodeRheme.label = "Rheme";
 		    nodeRheme.group = 2;
-		    nodeRheme.title = "Rheme";
-		    nodeRheme.shape="triangle";
-	    	nodeRheme.scaling = {label:{enabled:true}};
+		    nodeRheme.title = components[i][1];
+		    nodeRheme.shape="circle";
 	    	nodes.push(nodeRheme);
 
 		}
@@ -145,7 +122,16 @@ function displayThematicProgression(dataJSON)
 		var edgeTheme = {};
 		edgeTheme.from = j-1+THEME_OFFSET;
 		edgeTheme.to = j+THEME_OFFSET
-		edgeTheme.label = String(distances[j][0].toFixed(2));
+		
+		if(distances[j][0] == "coref")
+		{
+			edgeTheme.label = "coref";
+		}
+		else if(distances[j][0] != -10)
+		{
+			edgeTheme.label = String(distances[j][0].toFixed(2));
+		}
+
 		edgeTheme.font = {align: 'top'};
 		edgeTheme.arrows = "from";
 		edges.push(edgeTheme);
@@ -153,17 +139,27 @@ function displayThematicProgression(dataJSON)
 		var edgeRheme = {};
 		edgeRheme.from = j-1+RHEME_OFFSET;
 		edgeRheme.to = j+THEME_OFFSET
-		edgeRheme.label = String(distances[j][1].toFixed(2));
+
+		if(distances[j][1] != -10)
+		{
+			edgeRheme.label = String(distances[j][1].toFixed(2));
+		}
+
 		edgeRheme.font = {align: 'top'};
 		edgeRheme.arrows = "from";
 		edges.push(edgeRheme);
-/*
-		var edgeHyper = {};
-		edgeHyper.from = j+THEME_OFFSET
-		edgeHyper.to = 0;
-		edgeHyper.label = String(distances[j][2]);
-		edgeHyper.font = {align: 'top'};
-		edges.push(edgeHyper);*/
+
+		if(distances[j][2] != -10)
+		{
+			var edgeHyper = {};
+			edgeHyper.from = j+THEME_OFFSET
+			edgeHyper.to = 0;
+			edgeHyper.label = String(distances[j][2].toFixed(2));
+			edgeHyper.font = {align: 'top'};
+			edgeHyper.arrows = "to";
+			edges.push(edgeHyper);
+		}
+		
 	}
 
 
@@ -172,12 +168,20 @@ function displayThematicProgression(dataJSON)
         nodes: nodes, 
         edges: edges
     };
-    console.log(data);
     var options = {
 
-	  physics: false
 	};
+
     networkThem = new vis.Network(container, data, options);
+
+
+  	$('#them a').on('click', function (e) {
+	  e.preventDefault();
+	  $(this).tab('show');
+	  networkThem.fit();
+	});
+
+
 }
 
 
@@ -192,7 +196,7 @@ function manageOnOffSwitch()
 	  	$("#graphContainer").height(height);
 	  	$("#themContainer").height(height);
 	  	$("#themProgContainer").height(height);
-	  	
+	  	$("#corefContainer").height(height);
   	}
   	else
   	{
@@ -201,6 +205,7 @@ function manageOnOffSwitch()
   		$("#graphContainer").height(height);
   		$("#themContainer").height(height);
 	  	$("#themProgContainer").height(height);
+	  	$("#corefContainer").height(height);
 
   	}
   	//network.fit();
@@ -208,7 +213,7 @@ function manageOnOffSwitch()
 }
 
 
-function createGraph(dataJSON, i) 
+function displayTree(dataJSON, i) 
 {
 	if($("#idGraph").length == 0)
 	{
@@ -221,6 +226,7 @@ function createGraph(dataJSON, i)
 
 	var obj = $.parseJSON(dataJSON);
 	var tokens = obj["sentences"][i]["tokens"];
+	console.log(obj["corefs"]);
 
 	var nodes = [];
 	var edges = [];
@@ -280,6 +286,74 @@ function createGraph(dataJSON, i)
         }
     };
     network = new vis.Network(container, data, options);
+    	
+/*
+    $("#synt").click(function(){
+  		network.fit();
+  	});
+*/
+  	$('#synt a').on('click', function (e) {
+	  e.preventDefault();
+	  $(this).tab('show');
+ 	  network.fit();
+
+	});
+}
+
+function displayCorefs(dataJSON)
+{
+	var obj = $.parseJSON(dataJSON);
+	var corefs = obj["corefs"];
+	var nodes = [];
+	var edges = [];
+	/**
+		Create nodes
+	**/
+	var idNode = 0;
+
+	for (var i = 0; i < corefs.length; i++) 
+	{
+	    for(var j = 0; j < corefs[i].length; j++)
+	    {
+	    	console.log(idNode);
+	    	var node = {};
+		    node.id = idNode;
+		    node.label = corefs[i][j];
+		    node.group = j;
+		    nodes.push(node);
+		    idNode++;
+	    }
+	    idNode = idNode - corefs[i].length;
+	    console.log("end loop",idNode);
+	    for(var j = 0; j < corefs[i].length - 1; j++)
+	    {
+	    	var edge = {};
+	    	edge.from = idNode;
+	    	edge.to = idNode + 1;
+	    	edge.arrows = "to";
+	    	edges.push(edge);
+	    	idNode++;
+	    }
+	    idNode++;
+	    
+	}	
+	var container = document.getElementById('corefContainer');
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    var options = {
+
+    };
+    networkCoref = new vis.Network(container, data, options);
+    	
+  	$('#coref a').on('click', function (e) {
+	  e.preventDefault();
+	  $(this).tab('show');
+ 	  networkCoref.fit();
+
+	});
+
 }
 
 function displayThem(dataJSON)
@@ -297,12 +371,12 @@ function displayThem(dataJSON)
 		var dictHighlight = {};
 		var currentSentSelector = "#sent_"+p;
 
-		$( "#themContainer" ).append("<h3>Sentence Number "+(p+1)+"</h3><span id='sent_"+p+"'></span>");
+		$( "#themContainer" ).append("<br/><br/><h4>Sentence Number "+(p+1)+"</h3><span id='sent_"+p+"'></span>");
 		
 		$(currentSentSelector).append("<span id=ann_in>"+sentence+"</span><br/>");
 
 		var ann_selector = currentSentSelector + " " + "#ann_in";
-		$(ann_selector).highlight(sentence,{className:"proposition badge badge-pill badge-dark"});
+		$(ann_selector).highlight(sentence,{className:"proposition badge badge-pill badge-secondary"});
 
 
 		for (var j = 0; j < them.length; j++) 
@@ -318,19 +392,19 @@ function displayThem(dataJSON)
 				var className;
 				if(label[0] == "P")
 				{
-					className = "proposition badge badge-pill badge-dark";
+					className = "proposition badge badge-pill badge-secondary";
 				}
 				else if(label[0] == "R")
 				{
-					className = "rheme badge badge-pill badge-danger";
+					className = "rheme badge badge-pill badge-info";
 				}
 				else if(label[0] == "S")
 				{
-					className = "specifier badge badge-pill badge-warning";
+					className = "specifier badge badge-pill badge-success";
 				}
 				else
 				{
-					className = "theme badge badge-pill badge-success";
+					className = "theme badge badge-pill badge-primary";
 					$(currentSentSelector).append("<br/>");
 				}
 
@@ -340,7 +414,6 @@ function displayThem(dataJSON)
 					text+= tokens[k] + " "
 				}
 				text = $.trim(text);
-				console.log(text);
 				$(ann_selector).highlight(text,{className:className, wordsOnly: true});
 			}
 			

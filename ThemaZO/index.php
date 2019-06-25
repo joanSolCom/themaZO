@@ -5,24 +5,26 @@
 		  	<textarea id="inputBox" class="md-textarea" rows="3" placeholder="Write something here..."></textarea>
 		  </div>
 		  <div id= "wrapperButtons">
-			  <button id="submitButton" class="btn btn-primary">Submit</button>
-			  <button id="testButton" class="btn btn-info">Test</button>
+			  <button id="submitButton" class="btn btn-sample">Submit</button>
 	      </div>
       </div>
     </div>
   	<div id="pillWrapper">
-	  	<ul class="nav nav-pills">
+	  	<ul class="nav nav-pills btn-group">
 		
-		  <li class="nav-item pill-1">
-		  		<a class="nav-link active" data-toggle="pill" href="#home">Syntactic Tree</a>
+		  <li id="synt" class="nav-item pill-1">
+		  		<a class="btn btn-large btn-sample active" data-toggle="pill" href="#home">Syntactic Tree</a>
 		  </li>
 		  
 		  <li class="nav-item pill-2">
-		  		<a class="nav-link" data-toggle="pill" href="#menu1">Thematicity</a>
+		  		<a class="btn btn-large btn-sample" data-toggle="pill" href="#menu1">Thematicity</a>
 		  </li>
 
-		  <li class="nav-item pill-3">
-		  		<a class="nav-link" data-toggle="pill" href="#menu2">Thematic Progression</a>
+		  <li id="them" class="nav-item pill-3">
+		  		<a class="btn btn-large btn-sample" data-toggle="pill" href="#menu2">Thematic Progression</a>
+		  </li>
+		  <li id="coref" class="nav-item pill-4">
+		  		<a class="btn btn-large btn-sample" data-toggle="pill" href="#menu3">Coref Chains</a>
 		  </li>
 		
 		</ul>
@@ -46,6 +48,10 @@
 
 	  <div class="tab-pane container" id="menu2">
 		  	<div id="themProgContainer" class="result">
+		  	</div>
+	  </div>
+	  <div class="tab-pane container" id="menu3">
+		  	<div id="corefContainer" class="result">
 		  	</div>
 	  </div>
 	  
