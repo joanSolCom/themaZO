@@ -2,7 +2,7 @@
  	  
   	  <div id="textAreaWrapper">
 	  	  <div>
-		  	<textarea id="inputBox" class="md-textarea" rows="3" placeholder="Write something here..."></textarea>
+		  	<textarea id="inputBox" class="md-textarea" placeholder="Write something here..."></textarea>
 		  </div>
 		  <div id= "wrapperButtons">
 			  <button id="submitButton" class="btn btn-sample">Submit</button>
@@ -25,6 +25,9 @@
 		  </li>
 		  <li id="coref" class="nav-item pill-4">
 		  		<a class="btn btn-large btn-sample" data-toggle="pill" href="#menu3">Coref Chains</a>
+		  </li>
+		  <li id="facts" class="nav-item pill-5">
+		  		<a class="btn btn-large btn-sample" data-toggle="pill" href="#menu4">Arguments</a>
 		  </li>
 		
 		</ul>
@@ -52,6 +55,10 @@
 	  </div>
 	  <div class="tab-pane container" id="menu3">
 		  	<div id="corefContainer" class="result">
+		  	</div>
+	  </div>
+	  <div class="tab-pane container" id="menu4">
+		  	<div id="argumentContainer" class="result">
 		  	</div>
 	  </div>
 	  

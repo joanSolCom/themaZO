@@ -1,0 +1,55 @@
+[This]T1 [is the story that tells the tale of Johnny the Bear with his big club]R1. 
+
+[Johnny the Bear]T1 [goes out into the world with his big club]R1. 
+
+[Johnny the Bear]T1 [wanted {[to know fear]R1}P1.1]R1. 
+
+[He]T1 [was [always]SP1 fighting with his schoolmates and nobody could stand him]R1. 
+
+[I]T1 [want {[to know fear!]R1}P1.1]R1 , [he]T1 [told his mother and he said the same to his teacher]R1 ; 
+
+[I]T1 [want {[to know fear!.]R1}P1.1]R1 
+
+[Then one fine day]SP1, [{seeing that Johnny had not been born for reading books]R1}P1.1, [his teacher]T1 said to him, Take this club, Johnny]R1. 
+
+[It]T1 [will be useful for you in the big wide world]R1. 
+
+[It]T1 [was a fine club, the shaft of which was made of the wood from a holly bush]R1. 
+
+[{[[But]SP Johnny]T1 [broke it in half]R1}P2]T1 [as]SP1 if [it]T1 [were a twig]R1]R1}P3]R1. 
+
+[Ineed a club made of iron]R1. 
+
+[And]SP1 [the teacher]T1 [asked the blacksmith {[to forge a club of iron]R1}P1.1]R1. 
+
+[{[Whenthe teachergave Johnny the iron club as a present]SP1, [he]T1 [broke it in half]R1}P2]T1 [as]SP1 if [it]T1 [were a twig]R1]R1}P3]R1. 
+
+[This club]T1 [isn't any good for going out into world either]R1! 
+
+[And]SP1[ [{seeing this]R1}P1.1, [the teacher]T1 said, You go to the blacksmith yourself and ask him to make you a club that you want]R1 
+
+[I]T1 ['ll pay for it]R1. 
+
+[Johnny]T1 [went to the blacksmith 's forge and began to pick up all the metal shavings on the floor]R1. 
+
+[He]T1 [made a huge pile of scrap and asked the blacksmith to melt it]R1. 
+
+[And]SP1 [that]T1 [was {[how]R1-1 [Johnny]T1 [got the club he desired, a club made of iron and weighing a hundredweight]R1-2}P1.1]R1. 
+
+{[He]T1 [said goodbye to his mother]R1}P1.1, [he]T1 bade farewell to his teacher and he wished the blacksmith all the best]R1. 
+
+{[And]SP1 [his schoolmates]T1, [seeing that he was leaving, [started to chant]R1}P1.1, [Your Daddy]T1 is a bear]R1! 
+
+[Your Daddy]T1 [is a bear]R1! 
+
+[Johnny]T1 [entered the wood and there he saw a woodcutter cutting down a beech tree]R1. 
+
+What [do [you]T1 want that tree for]R1 ? 
+
+[My mother]T1 [asked me {[to find some firewood]R1}P1.1, replied the woodcutter]R1. 
+
+{[Johnny]T1 [saw the woodcutter give the final blow with the axe]R1}P1.1, let the tree fall on his shoulder and carry it home]R1. 
+
+[Johnny]T1 [was amazed at the strength of this man and he thought, The world is full of people like me]R1! 
+
+[And]SP1 {[after]SP1 [the woodcutter]T1 [left the tree at his mother's house, Johnny and his new friend]R1}P1.1 went off to travel round the world]R1. 

@@ -20,7 +20,7 @@ def writeLabel(word, label, level = 0):
 
 def buildLabel(word, span, oneword = 0, count = 1, level = 0):
 	if oneword:
-		label = constants.OPEN_T + span + str(count) + constants.CLOSE_T
+		label = constants.OPEN_T + constants.CLOSE_T + span + str(count) 
 		writeLabel(word, label)
 
 		if span == constants.SPEC:

@@ -192,13 +192,13 @@ class ThemParser:
 			arrayL2T = self.form_array(arrayL2T, minId, minId, "SP1")
 
 			# Theme L2
-			maxId2, arrayT = self.themeL2(sentence, iTree, int(n.id))
+			maxId2, arrayT = self.themeL2(sentence, iTree, int(node.id))
 			arrayL2T.append(arrayT[0])
 
 			if maxId2 < minId:
 				maxId2 = minId + 1
 			# Rheme L2
-			writeThem(sentence, maxID, maxId2, 1)
+			writeThem(sentence, maxId, maxId2, 1)
 			arrayL2T = self.form_array(arrayL2T, maxId2, maxId, "R1")
 
 			# Theme L1
@@ -273,6 +273,7 @@ class ThemParser:
 		new_sent = []
 		array4web = []
 		sentCount = 0
+		self.conll = ""
 		for sentence in self.iCS.sentences:
 			array4sent = []
 			sentCount += 1
@@ -283,9 +284,9 @@ class ThemParser:
 
 			root, endsent = self.propAnalyze(sentence)
 
-			print("################")
-			print(sentCount)
-			print()
+			#print("################")
+			#print(sentCount)
+			#print()
 			iTree = SyntacticTreeOperations(sentence.raw_sentence)
 			
 			typeStr = self.get_type_struc(iTree, root[0])
@@ -326,8 +327,9 @@ class ThemParser:
 				array4sent.append(array4level)
 
 			array4web.append(array4sent)
-			print(array4sent)
-			print(sentence)
+			#print(array4sent)
+			#print(sentence)
+			self.conll += str(sentence) + "\n"
 
 		self.levels = array4web
 

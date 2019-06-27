@@ -48,6 +48,7 @@ function manageSubmitButton()
 	  	$("#themContainer").height(height);
 	  	$("#themProgContainer").height(height);
 	  	$("#corefContainer").height(height);
+	  	$("#argumentContainer").height(height);
 
 	  	$("#header").hide()
 
@@ -62,6 +63,8 @@ function manageSubmitButton()
 
 		$.post( "http://127.0.0.1:5000/getThematicity", function( dataJSON ) {
 		    displayThem(dataJSON);
+   		    displayArguments(dataJSON);
+
 		}, "json");
 
 		$.post( "http://127.0.0.1:5000/getThematicProgression", function( dataJSON ) {
@@ -72,9 +75,59 @@ function manageSubmitButton()
   	});
 }
 
+function displayArguments(dataJSON)
+{
+	var obj = $.parseJSON(dataJSON);
+	var arguments = [];
+	$("#argumentContainer").html();
+	for(var p = 0; p<obj["sentences"].length; p++)
+	{
+		var sentence = obj["sentences"][p]["text"];
+		var them = obj["sentences"][p]["components"];
+		var tokens = obj["sentences"][p]["tokens"];
+
+		var hasThem = false;
+		var hasRhem = false;
+		var startThem = -1;
+		var endRhem = -1;
+		var length = 0;
+
+		for(var n = 0; n < them[0].length; n++)
+		{
+			var from = them[0][n][0] - 1;
+			var to = them[0][n][1] - 1;
+			var label = them[0][n][2];
+			var className;
+			
+			if(label[0] == "R")
+			{
+				hasRhem = true;
+				endRhem = to;
+			}
+			else if(label[0] == "T")
+			{
+				hasThem = true;
+				startThem = from;
+			}
+			if(length < (endRhem - startThem))
+			{
+				length = endRhem - startThem;
+			}
+		}
+		$("#argumentContainer").append("<ol>");
+
+		if(hasThem && hasRhem && (length > (tokens.length - 5)))
+		{
+			$("#argumentContainer").append("<li>"+sentence+"</li>");
+		}
+		$("#argumentContainer").append("</ol>");
+
+	}
+	
+}
+
 function displayThematicProgression(dataJSON)
 {
-
 	var nodes = [];
 	var edges = [];
 
@@ -119,35 +172,36 @@ function displayThematicProgression(dataJSON)
 
 	for(var j = 1; j< distances.length; j++)
 	{
-		var edgeTheme = {};
-		edgeTheme.from = j-1+THEME_OFFSET;
-		edgeTheme.to = j+THEME_OFFSET
 		
-		if(distances[j][0] == "coref")
+		if(distances[j][0] != -10)
 		{
-			edgeTheme.label = "coref";
+			var edgeTheme = {};
+			edgeTheme.from = j-1+THEME_OFFSET;
+			edgeTheme.to = j+THEME_OFFSET
+			if(distances[j][0] == "coref")
+			{
+				edgeTheme.label = "coref";
+			}
+			else{
+				edgeTheme.label = String(distances[j][0].toFixed(2));
+			}
+			edgeTheme.font = {align: 'top'};
+			edgeTheme.arrows = "from";
+			edges.push(edgeTheme);
 		}
-		else if(distances[j][0] != -10)
-		{
-			edgeTheme.label = String(distances[j][0].toFixed(2));
-		}
-
-		edgeTheme.font = {align: 'top'};
-		edgeTheme.arrows = "from";
-		edges.push(edgeTheme);
-
-		var edgeRheme = {};
-		edgeRheme.from = j-1+RHEME_OFFSET;
-		edgeRheme.to = j+THEME_OFFSET
 
 		if(distances[j][1] != -10)
 		{
+			var edgeRheme = {};
 			edgeRheme.label = String(distances[j][1].toFixed(2));
+			edgeRheme.from = j-1+RHEME_OFFSET;
+			edgeRheme.to = j+THEME_OFFSET
+			edgeRheme.font = {align: 'top'};
+			edgeRheme.arrows = "from";
+			edges.push(edgeRheme);
 		}
 
-		edgeRheme.font = {align: 'top'};
-		edgeRheme.arrows = "from";
-		edges.push(edgeRheme);
+		
 
 		if(distances[j][2] != -10)
 		{
@@ -160,6 +214,27 @@ function displayThematicProgression(dataJSON)
 			edges.push(edgeHyper);
 		}
 		
+	}
+
+	var len = nodes.length;
+	for(var i = 0 ; i< len; i++)
+	{
+		var id = nodes[i].id;
+		var found = false;
+		for(var j=0; j< edges.length;j++)
+		{
+			if(edges[j].from == id || edges[j].to == id)
+			{
+				found = true;
+				break;
+			}
+		}
+		if(!found)
+		{
+			nodes.splice(i,1);
+			len = nodes.length;
+			i--;
+		}
 	}
 
 
@@ -197,6 +272,7 @@ function manageOnOffSwitch()
 	  	$("#themContainer").height(height);
 	  	$("#themProgContainer").height(height);
 	  	$("#corefContainer").height(height);
+	  	$("#argumentContainer").height(height);
   	}
   	else
   	{
@@ -206,6 +282,7 @@ function manageOnOffSwitch()
   		$("#themContainer").height(height);
 	  	$("#themProgContainer").height(height);
 	  	$("#corefContainer").height(height);
+	  	$("#argumentContainer").height(height);
 
   	}
   	//network.fit();
@@ -226,7 +303,6 @@ function displayTree(dataJSON, i)
 
 	var obj = $.parseJSON(dataJSON);
 	var tokens = obj["sentences"][i]["tokens"];
-	console.log(obj["corefs"]);
 
 	var nodes = [];
 	var edges = [];
@@ -315,7 +391,6 @@ function displayCorefs(dataJSON)
 	{
 	    for(var j = 0; j < corefs[i].length; j++)
 	    {
-	    	console.log(idNode);
 	    	var node = {};
 		    node.id = idNode;
 		    node.label = corefs[i][j];
@@ -324,7 +399,6 @@ function displayCorefs(dataJSON)
 		    idNode++;
 	    }
 	    idNode = idNode - corefs[i].length;
-	    console.log("end loop",idNode);
 	    for(var j = 0; j < corefs[i].length - 1; j++)
 	    {
 	    	var edge = {};
@@ -373,50 +447,50 @@ function displayThem(dataJSON)
 
 		$( "#themContainer" ).append("<br/><br/><h4>Sentence Number "+(p+1)+"</h3><span id='sent_"+p+"'></span>");
 		
-		$(currentSentSelector).append("<span id=ann_in>"+sentence+"</span><br/>");
-
-		var ann_selector = currentSentSelector + " " + "#ann_in";
-		$(ann_selector).highlight(sentence,{className:"proposition badge badge-pill badge-secondary"});
-
+		$(currentSentSelector).append("<span id='ann_in'><span class='proposition badge badge-pill badge-secondary'>"+sentence+"</span></span><br/>");
 
 		for (var j = 0; j < them.length; j++) 
 		{
-			$(currentSentSelector).append("<span id=ann_"+j+">"+sentence +"</span><br/>");
-			ann_selector = currentSentSelector + " #ann_" +j;
-
+			var sentenceArray = [];
+			sentenceArray.push("<span id=ann_"+j+">");
+			for(var c =0; c<tokens.length;c++)
+			{
+				sentenceArray.push(tokens[c]);
+			}
+			console.log(tokens);
 			for(var n = 0; n < them[j].length; n++)
 			{
 				var from = them[j][n][0] - 1;
 				var to = them[j][n][1] - 1;
 				var label = them[j][n][2];
-				var className;
+				var toAppend = "</span>";
+				var toPrepend;
+				console.log(from, to, label);
+
 				if(label[0] == "P")
 				{
-					className = "proposition badge badge-pill badge-secondary";
+					toPrepend = "<span class='proposition badge badge-pill badge-secondary'>";
 				}
 				else if(label[0] == "R")
 				{
-					className = "rheme badge badge-pill badge-info";
+					toPrepend = "<span class='rheme badge badge-pill badge-info'>";
 				}
 				else if(label[0] == "S")
 				{
-					className = "specifier badge badge-pill badge-success";
+					toPrepend = "<span class='specifier badge badge-pill badge-success'>";
 				}
 				else
 				{
-					className = "theme badge badge-pill badge-primary";
-					$(currentSentSelector).append("<br/>");
+					toPrepend = "<span class='theme badge badge-pill badge-primary'>";
 				}
 
-				var text = "";
-				for(var k = from; k<=to;k++)
-				{
-					text+= tokens[k] + " "
-				}
-				text = $.trim(text);
-				$(ann_selector).highlight(text,{className:className, wordsOnly: true});
-			}
+				sentenceArray[from+1] = toPrepend + sentenceArray[from+1];
+				sentenceArray[to+1] = sentenceArray[to+1] + toAppend;
+
 			
+			}
+			sentenceArray.push("</span><br/>");
+			$(currentSentSelector).append(sentenceArray.join(" "))
 
 		}
 		$(currentSentSelector).append("<br/>");
