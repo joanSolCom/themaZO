@@ -168,6 +168,104 @@ class SyntacticTreeOperations(TreeOperations):
 
 		return nodes
 
+	def search_same_level(self, dep1, pos2, dep3, lemma1=None):
+		it = self.tree.getWidthIterator()
+		nodes = []
+		for current in it:
+			if current:
+				firstNode = None
+				secondNode = None
+				for child in current.children:					
+					if child.arcLabel in dep1 or (lemma1 and child.lemma in lemma1):
+						firstNode = child
+					if child.pos in pos2:
+						secondNode = child
+				
+				if firstNode and secondNode:
+					if self.searchChild(dependencies=["nsubj","nsubjpass"], startNode=secondNode):
+						nodes.append((firstNode,secondNode))
+
+		return nodes
+
+	def searchChild(self, dependencies, startNode):
+		for child in startNode.children:
+			if child.arcLabel in dependencies:
+				return True
+
+		return False
+
+
+	def search(self, dependencies = [], pos = [], lemmas = [], startNode = None, recursive=False, depChildren=[], posChildren=[], lemmaChildren=[]):
+		it = None
+		if not startNode:
+			it = self.tree.getWidthIterator()
+		else:
+			it = self.tree.getWidthIterator(startNode)
+
+		nodes = []
+		for current in it:
+			if current:
+				for child in current.children:
+					if dependencies and pos and lemmas:
+						if child.arcLabel in dependencies and child.pos in pos and child.lemma in lemmas:
+							if recursive:
+								nodesChildren = self.search(depChildren, posChildren, lemmaChildren, child, False)
+								if nodesChildren:
+									nodes.append(child)
+							else:
+								nodes.append(child)
+					elif dependencies and pos and not lemmas:
+						if child.arcLabel in dependencies and child.pos in pos:
+							if recursive:
+								nodesChildren = self.search(depChildren, posChildren, lemmaChildren, child, False)
+								if nodesChildren:
+									nodes.extend(nodesChildren)
+									nodes.append(child)
+							else:
+								nodes.append(child)
+					elif dependencies and lemmas and not pos:
+						if child.arcLabel in dependencies and child.lemma in lemmas:
+							if recursive:
+								nodesChildren = self.search(depChildren, posChildren, lemmaChildren, child, False)
+								if nodesChildren:
+									nodes.append(child)
+							else:
+								nodes.append(child)
+					elif pos and lemmas and not dependencies:
+						if child.lemma in lemmas and child.pos in pos:
+							if recursive:
+								nodesChildren = self.search(depChildren, posChildren, lemmaChildren, child, False)
+								if nodesChildren:
+									nodes.append(child)
+							else:
+								nodes.append(child)
+					elif pos and not lemmas and not dependencies:
+						if child.pos in pos:
+							if recursive:
+								nodesChildren = self.search(depChildren, posChildren, lemmaChildren, child, False)
+								if nodesChildren:
+									nodes.append(child)
+							else:
+								nodes.append(child)
+					elif lemmas and not pos and not dependencies:
+						if child.lemma in lemmas:
+							if recursive:
+								nodesChildren = self.search(depChildren, posChildren, lemmaChildren, child, False)
+								if nodesChildren:
+									nodes.append(child)
+							else:
+								nodes.append(child)
+					elif dependencies and not lemmas and not pos:
+						if child.arcLabel in dependencies:
+							if recursive:
+								nodesChildren = self.search(depChildren, posChildren, lemmaChildren, child, False)
+								if nodesChildren:
+									nodes.append(child)
+							else:
+								nodes.append(child)
+
+		return nodes
+
 	def get_prev_same_level_nodes(self, dependency):
 		it = self.tree.getWidthIterator()
 		nodes = []
@@ -213,6 +311,8 @@ class SyntacticTreeOperations(TreeOperations):
 						minId = child.id
 					if child.id > maxId:
 						maxId = child.id
+						if child.arcLabel == "punct":
+							maxId -= 1
 
 		return minId, maxId
 

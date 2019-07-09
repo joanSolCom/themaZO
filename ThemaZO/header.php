@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>Demo ThemaZO Thematicity Parser</title>
+  <title>Demo ThemePro</title>
   <meta name="description" content="Demo for the thematicity parser ThemaZO">
   <meta name="author" content="Juan Soler">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -25,5 +25,5 @@
 	</div>
 	<div id="header">
 	  	<h1 id="main-title">
-  			ThemaZO
+  			ThemePro
   		</h1>

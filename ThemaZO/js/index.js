@@ -55,19 +55,19 @@ function manageSubmitButton()
 	  	var text =  $('textarea#inputBox').val();
 	  	var data = {"text": text};
 
-	    $.post( "http://127.0.0.1:5000/getConll", data ,function( dataJSON ) {
+	    $.post( "http://10.80.28.153:5000/getConll", data ,function( dataJSON ) {
 		    displayTree(dataJSON, 0);
 		    displayCorefs(dataJSON);
 		    globalDATA = dataJSON;
 		}, "json");
 
-		$.post( "http://127.0.0.1:5000/getThematicity", function( dataJSON ) {
+		$.post( "http://10.80.28.153:5000/getThematicity", function( dataJSON ) {
 		    displayThem(dataJSON);
    		    displayArguments(dataJSON);
 
 		}, "json");
 
-		$.post( "http://127.0.0.1:5000/getThematicProgression", function( dataJSON ) {
+		$.post( "http://10.80.28.153:5000/getThematicProgression", function( dataJSON ) {
 		    displayThematicProgression(dataJSON);
 		}, "json");
 		
@@ -85,12 +85,14 @@ function displayArguments(dataJSON)
 		var sentence = obj["sentences"][p]["text"];
 		var them = obj["sentences"][p]["components"];
 		var tokens = obj["sentences"][p]["tokens"];
+		var pos = obj["sentences"][p]["pos"];
 
 		var hasThem = false;
 		var hasRhem = false;
 		var startThem = -1;
 		var endRhem = -1;
 		var length = 0;
+		var themNotPron = true;
 
 		for(var n = 0; n < them[0].length; n++)
 		{
@@ -106,9 +108,32 @@ function displayArguments(dataJSON)
 			}
 			else if(label[0] == "T")
 			{
+				var pronList = ["i","we","you"];
 				hasThem = true;
 				startThem = from;
+				if(from == to)
+				{
+					posTheme = pos[from];
+					lemmaTheme = tokens[from].toLowerCase();
+					if(posTheme == "PRP" && ($.inArray(lemmaTheme, pronList) != -1))
+					{
+						console.log("FALSE");
+						themNotPron = false;
+					}
+				}
 			}
+			if(label[0] == "S")
+			{
+				if(from < startThem)
+				{
+					startThem = from;
+				}
+				if(to > endRhem)
+				{
+					endRhem = to;
+				}
+			}
+			
 			if(length < (endRhem - startThem))
 			{
 				length = endRhem - startThem;
@@ -116,7 +141,9 @@ function displayArguments(dataJSON)
 		}
 		$("#argumentContainer").append("<ol>");
 
-		if(hasThem && hasRhem && (length > (tokens.length - 5)))
+		console.log(sentence);
+		console.log(hasThem && hasRhem && (length > (tokens.length - 3)) && themNotPron);
+		if(hasThem && hasRhem && (length > (tokens.length - 3)) && themNotPron)
 		{
 			$("#argumentContainer").append("<li>"+sentence+"</li>");
 		}
@@ -170,10 +197,11 @@ function displayThematicProgression(dataJSON)
 		}
 	}
 
+	var THRESHOLD = 1;
 	for(var j = 1; j< distances.length; j++)
 	{
 		
-		if(distances[j][0] != -10)
+		if(distances[j][0] != -10 && distances[j][0] < THRESHOLD)
 		{
 			var edgeTheme = {};
 			edgeTheme.from = j-1+THEME_OFFSET;
@@ -190,7 +218,7 @@ function displayThematicProgression(dataJSON)
 			edges.push(edgeTheme);
 		}
 
-		if(distances[j][1] != -10)
+		if(distances[j][1] != -10 && distances[j][1] < THRESHOLD)
 		{
 			var edgeRheme = {};
 			edgeRheme.label = String(distances[j][1].toFixed(2));
@@ -203,7 +231,7 @@ function displayThematicProgression(dataJSON)
 
 		
 
-		if(distances[j][2] != -10)
+		if(distances[j][2] != -10 && distances[j][2] < THRESHOLD)
 		{
 			var edgeHyper = {};
 			edgeHyper.from = j+THEME_OFFSET
@@ -457,7 +485,6 @@ function displayThem(dataJSON)
 			{
 				sentenceArray.push(tokens[c]);
 			}
-			console.log(tokens);
 			for(var n = 0; n < them[j].length; n++)
 			{
 				var from = them[j][n][0] - 1;
@@ -465,7 +492,7 @@ function displayThem(dataJSON)
 				var label = them[j][n][2];
 				var toAppend = "</span>";
 				var toPrepend;
-				console.log(from, to, label);
+				//console.log(from, to, label);
 
 				if(label[0] == "P")
 				{

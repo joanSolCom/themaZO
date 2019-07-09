@@ -6,6 +6,7 @@ from logging import Formatter, INFO
 import spacy
 from themaParse import ThemParser
 from themaProg import ThematicProgression
+from elmoEmbeddings import ElmoEmbeddings
 import neuralcoref
 
 from flask import g
@@ -24,9 +25,18 @@ def load_spacy():
 	print("loaded")
 	return en_nlp
 
+def load_elmo():
+	#return None
+	print("loading elmo")
+	elm = ElmoEmbeddings()
+	print("loaded")
+	return elm
+
 en_nlp = load_spacy()
+elmo = load_elmo()
 
 def process(text):
+	text = text.replace("  "," ")
 	doc = en_nlp(text)
 
 	textConll = ""
@@ -94,14 +104,18 @@ def getThematicity():
 		dictS = {}
 		dictS["text"] = ""
 		dictS["tokens"] = []
+		dictS["pos"] = []
+		dictS["components"] = []
 		for token in sentence.split("\n"):
 			tokenComponents = token.split("\t")
 			if len(tokenComponents) > 1:
 				dictS["text"] += tokenComponents[1] + " "
 				dictS["tokens"].append(tokenComponents[1])
+				dictS["pos"].append(tokenComponents[3])
 
 		dictS["text"] = dictS["text"].strip()
-		dictS["components"] = levels[idS]
+		if levels:
+			dictS["components"] = levels[idS]	
 		dictJson["sentences"].append(dictS)
 
 	jsonStr = json.dumps(dictJson)
@@ -109,7 +123,7 @@ def getThematicity():
 
 @app.route('/getThematicProgression', methods=["POST"])
 def getThematicProgression():
-	iTP = ThematicProgression(cache["iT"], cache["corefs"])
+	iTP = ThematicProgression(cache["iT"], cache["corefs"], elmo)
 	dictJSON = {}
 	dictJSON["distances"] = iTP.distances
 	dictJSON["components"] = iTP.components
@@ -130,5 +144,4 @@ if __name__ == '__main__':
     handler.setLevel(INFO)
     handler.setFormatter(formatter)
     app.logger.addHandler(handler)
-
-    app.run(port=5000, debug=True)
+    app.run(host= '0.0.0.0', port=5000, debug=True)

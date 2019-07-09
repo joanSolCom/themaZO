@@ -12,7 +12,7 @@ class SQLEmbeddings:
 	def __init__(self, dbname="Embeddings"):
 		self.db = pymysql.connect(host='localhost', user='root', password='pany8491', db=dbname, charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
 
-	def getWordVector(self, word, tableName ="google" ,nDims = 300):
+	def getWordVector(self, word, tableName ="glove" ,nDims = 300):
 		cursor = self.db.cursor()
 		dimList = []
 		for i in range(1,nDims+1):
@@ -37,7 +37,7 @@ class SQLEmbeddings:
 
 		return vector
 
-	def getMsgVector(self, msg, tableName ="google" ,nDims = 300, lang="en"):
+	def getMsgVector(self, msg, tableName ="glove" ,nDims = 300, lang="en"):
 		cleanMsg = msg.split()
 		vectors = []
 

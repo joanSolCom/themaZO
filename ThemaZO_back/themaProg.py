@@ -3,10 +3,17 @@ from pprint import pprint
 
 class ThematicProgression():
 
-	def __init__(self, iT, corefs):
+	def __init__(self, iT, corefs, elmo=None):
 		self.iT = iT
 		self.corefs = corefs
-		self.iSQL = SQLEmbeddings()
+		self.iSQL = None
+		self.elmo = None
+
+		if not elmo:
+			self.iSQL = SQLEmbeddings()
+		else:
+			self.elmo = elmo
+
 		dist, components = self.computeProgression()
 
 		self.distances = dist
@@ -22,7 +29,14 @@ class ThematicProgression():
 		nTokens = len(self.iT.iCS.sentences[0])
 		hyperTheme, _ = self.getSpan(0 ,1, nTokens)
 		self.hypernode = hyperTheme
-		hyperThemeVector = self.iSQL.getMsgVector(hyperTheme)
+
+		hyperThemeVector = None
+
+		if not self.elmo:
+			hyperThemeVector = self.iSQL.getMsgVector(hyperTheme)
+		else:
+			vectors = self.elmo.getSentenceVector(hyperTheme.split())
+			hyperThemeVector = self.elmo.getCentroid(vectors)
 
 		distances = []
 		components = []
@@ -38,15 +52,27 @@ class ThematicProgression():
 			pron = False
 
 			for start, end, label in firstLevel:
-
 				if label.startswith("T"):
+					themeVector = None
 					spantheme = (start, end)
 					theme, pron = self.getSpan(idS ,start, end)
-					themeVector = self.iSQL.getMsgVector(theme)
+					if not self.elmo:
+						themeVector = self.iSQL.getMsgVector(theme)
+					else:
+						vectors = self.elmo.getSentenceVector(theme.split())
+						themeVector = self.elmo.getCentroid(vectors)
+
 				if label.startswith("R"):
+					rhemeVector = None
+
 					spanrheme = (start, end)
 					rheme, _ = self.getSpan(idS, start, end)
-					rhemeVector = self.iSQL.getMsgVector(rheme)
+
+					if not self.elmo:
+						rhemeVector = self.iSQL.getMsgVector(rheme)
+					else:
+						vectors = self.elmo.getSentenceVector(rheme.split())
+						rhemeVector = self.elmo.getCentroid(vectors)
 			
 			dTheme = -1
 			dRheme = -1
@@ -64,8 +90,13 @@ class ThematicProgression():
 							dTheme="coref"
 					else:
 						if not pron:
-							dTheme = self.iSQL.distance(themeVector, previousTheme)[0][0]
-							dHyper = self.iSQL.distance(themeVector, hyperThemeVector)[0][0]
+							if not self.elmo:
+								dTheme = self.iSQL.distance(themeVector, previousTheme)[0][0]
+								dHyper = self.iSQL.distance(themeVector, hyperThemeVector)[0][0]
+							else:
+								dTheme = self.elmo.distance(themeVector, previousTheme)[0][0]
+								dHyper = self.elmo.distance(themeVector, hyperThemeVector)[0][0]
+
 						else:
 							print("IM HERE", theme, previousThemeStr)
 							dHyper = -10
@@ -76,7 +107,10 @@ class ThematicProgression():
 							
 				if previousRheme:
 					if not pron:
-						dRheme = self.iSQL.distance(themeVector, previousRheme)[0][0]
+						if not self.elmo:
+							dRheme = self.iSQL.distance(themeVector, previousRheme)[0][0]
+						else:
+							dRheme = self.elmo.distance(themeVector, previousRheme)[0][0]
 					else:
 						dRheme = -10
 
@@ -103,6 +137,7 @@ class ThematicProgression():
 	def getSpan(self, idSentence, start, end):
 		sent = self.iT.iCS.sentences[idSentence]
 		posTag = None
+
 		pron = False
 		if start == end:
 			span = sent.tokens[str(start)].form
@@ -112,7 +147,8 @@ class ThematicProgression():
 			i = start
 			span = ""
 			while i <= end:
-				span += sent.tokens[str(i)].form + " "
+				if str(i) in sent.tokens:
+					span += sent.tokens[str(i)].form + " "
 				i+=1
 
 		if posTag and posTag in ["PRP","DT"]:

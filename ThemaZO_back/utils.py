@@ -4,27 +4,23 @@
 import constants
 
 def writeLabel(word, label, level = 0):
-	#print word.them
 	if word.them == constants.EMPTY:
 		word.them = label
 	elif label == word.them:
 		word.them = word.them
-	#elif level and word.them != constants.EMPTY:
-	#	word.them = label + word.them
 	elif word.them[0] in (constants.OPEN_T, constants.OPEN_P):
 		word.them += label
 	else:
 		word.them = label + word.them
-	#elif word.them[0] == constants.CLOSE_P:
-	#	word.them = label + word.them
+
 
 def buildLabel(word, span, oneword = 0, count = 1, level = 0):
-	if oneword:
-		label = constants.OPEN_T + constants.CLOSE_T + span + str(count) 
+	if oneword and level:
+		label = constants.OPEN_T + span + str(count) + constants.DASH + str(level) + constants.CLOSE_T
 		writeLabel(word, label)
-
-		if span == constants.SPEC:
-			count += 1
+	elif oneword:
+		label = constants.OPEN_T + span + str(count) + constants.CLOSE_T
+		writeLabel(word, label)
 
 	elif span in ("[", "{"):
 		writeLabel(word, span)
@@ -38,31 +34,29 @@ def buildLabel(word, span, oneword = 0, count = 1, level = 0):
 		writeLabel(word, labelT)
 
 	elif level:
-		labelP = constants.CLOSE_P + span + str(count) + constants.DOT + str(level)
+		lev = ".1"
+		labelP = constants.CLOSE_P + span + str(count) + (lev * level)
 		writeLabel(word, labelP, level)
 
 	else:
 		labelP = constants.CLOSE_P + span + str(count)
 		writeLabel(word, labelP)
-		count += 1
-	
-	return count
 
 def writeThem(sentence, end, start = 1, rheme = 0, spcount = 0, prop = 0, level = 0):
-	#print "writing thematicity"
-	# single thematicity T or SP
-	if rheme:
+	if rheme and end != start:
 		buildLabel(sentence.tokens[str(start)], constants.OPEN_T)
 		if level:
-			buildLabel(sentence.tokens[str(end)], constants.RHEME, 0, 1, level)
+			buildLabel(sentence.tokens[str(end)], constants.RHEME, count= 1, level= level)
 		else:
 			buildLabel(sentence.tokens[str(end)], constants.RHEME)
-
+	# single word thematicity T or SP
 	elif end == start and prop == 0:
-		if spcount == 0:
-			buildLabel(sentence.tokens[str(end)], constants.THEME, 1)
+		if spcount == 0 and rheme == 0:
+			buildLabel(sentence.tokens[str(end)], constants.THEME, oneword= 1)
+		elif rheme:
+			buildLabel(sentence.tokens[str(end)], constants.RHEME, oneword= 1, count= 1, level= level)
 		else:
-			spcount = buildLabel(sentence.tokens[str(end)], constants.SPEC, 1, spcount)
+			buildLabel(sentence.tokens[str(end)], constants.SPEC, oneword= 1, count= spcount)
 
 	# multi word T or SP
 	elif end != start and prop == 0 and rheme == 0:
@@ -71,14 +65,12 @@ def writeThem(sentence, end, start = 1, rheme = 0, spcount = 0, prop = 0, level 
 			buildLabel(sentence.tokens[str(end)], constants.THEME)
 
 		else:
-			spcount = buildLabel(sentence.tokens[str(end)], constants.SPEC, 0, spcount)
+			buildLabel(sentence.tokens[str(end)], constants.SPEC, count= spcount)
 
 	elif level:
 		buildLabel(sentence.tokens[str(start)], constants.OPEN_P)
-		buildLabel(sentence.tokens[str(end)], constants.PROP, 0, prop, level)
+		buildLabel(sentence.tokens[str(end)], constants.PROP, count= prop, level= level)
 
 	elif prop:
 		buildLabel(sentence.tokens[str(start)], constants.OPEN_P)
-		prop = buildLabel(sentence.tokens[str(end)], constants.PROP, 0, prop)
-
-	return prop, spcount
+		buildLabel(sentence.tokens[str(end)], constants.PROP, count= prop)
